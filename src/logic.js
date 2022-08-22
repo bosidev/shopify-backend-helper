@@ -1,0 +1,141 @@
+async function displayInventoryData() {
+  const orderData = await fetchOrderData();
+  const productsInOrder = orderData.order.line_items;
+  let productSKUs = [];
+  let productQuantities = [];
+
+  for (let i = 0; i < productsInOrder.length; i++) {
+    let variantId = await productsInOrder[i].variant_id;
+    let response = await fetch(
+      companyApiBase + variantResourceSuffix + variantId + fileSuffix
+    );
+    let data = await response.json();
+
+    let inventoryQuantity = data.variant.inventory_quantity;
+    let sku = data.variant.sku;
+    let isAlreadyCreated = document.getElementById("OOS-" + i);
+
+    productSKUs.push(sku);
+    productQuantities.push(inventoryQuantity);
+
+    if (!isAlreadyCreated) {
+      setTimeout(() => {
+        addElement(i);
+      }, 1500);
+    }
+
+    setTimeout(() => {
+      setElementContent(i, productSKUs, productQuantities);
+    }, 1500);
+  }
+}
+
+async function fetchOrderData() {
+  let orderId =
+    window.location.pathname.split("/")[
+      window.location.pathname.split("/").length - 1
+    ];
+  let apiString = companyApiBase + orderResourceSuffix + orderId + fileSuffix;
+  let response = await fetch(apiString);
+  let orderData = await response.json();
+
+  return orderData;
+}
+
+function addElement(i) {
+  let newDiv = document.createElement("div");
+  let newSpan = document.createElement("span");
+  let currentDiv = document.getElementsByClassName("YD4Qk")[i];
+
+  newDiv.setAttribute("id", "OOS-" + i);
+  newSpan.setAttribute("id", "OOS-" + i + "-Span");
+
+  newDiv.style.borderColor = "white";
+  newDiv.style.borderStyle = "solid";
+  newDiv.style.borderRadius = "10px";
+  newDiv.style.textAlign = "center";
+  newDiv.style.width = "200px";
+
+  newDiv.appendChild(newSpan);
+
+  if (currentDiv) {
+    currentDiv.appendChild(newDiv);
+  }
+}
+
+function setElementContent(i, productSKUs, productQuantities) {
+  let currentDiv = document.getElementsByClassName("YD4Qk")[i];
+  let childsOfCurrentDiv = currentDiv.getElementsByTagName("span");
+  let currentProductSKU = '';
+
+  for (let j = 0; j < childsOfCurrentDiv.length; j++) {
+    if (childsOfCurrentDiv[j].innerHTML.includes("Artikelnummer")) {
+      currentProductSKU = childsOfCurrentDiv[j].innerHTML.replace(
+        "Artikelnummer: ",
+        ""
+      );
+    }
+    for (let k = 0; k < productSKUs.length; k++) {
+      if (currentProductSKU === productSKUs[k]) {
+        let currentInventoryQuantity = productQuantities[k];
+
+        let spanContent = document.getElementById("OOS-" + i + "-Span");
+        let newDiv = document.getElementById("OOS-" + i);
+
+        if (spanContent) {
+          spanContent.textContent =
+            currentInventoryQuantity.toString() + " Verfügbar ";
+        }
+
+        if (newDiv) {
+          giveCorrectDivColor(currentInventoryQuantity, newDiv);
+        }
+      }
+    }
+  }
+}
+
+function giveCorrectDivColor(currentInventoryQuantity, newDiv) {
+  if (currentInventoryQuantity > 20) {
+    newDiv.style.backgroundColor = "lightgreen";
+  } else if (currentInventoryQuantity <= 20 && currentInventoryQuantity > 0) {
+    newDiv.style.backgroundColor = "beige";
+  } else {
+    newDiv.style.backgroundColor = "lightpink";
+  }
+}
+
+// Uncheck Restock
+
+const giveButtonsClickEvent = () => {
+  let arrowButtons = document.getElementsByClassName(
+    "Polaris-TextField__Segment_xdd2a"
+  );
+  let evenButtonPosition = true;
+
+  for (let i = 0; i < arrowButtons.length; i++) {
+    if (evenButtonPosition) {
+      arrowButtons[i].addEventListener("click", uncheckByClick);
+      evenButtonPosition = false;
+    } else {
+      evenButtonPosition = true;
+      continue;
+    }
+  }
+};
+
+const uncheckByClick = () => {
+  let checkboxIsVisible = document.querySelector(
+    ".Polaris-Choice__Descriptions_pp5ln"
+  );
+
+  if (!checkboxIsVisible && isNewRefund === true) {
+    setTimeout(() => {
+      let checkbox = document.getElementsByClassName(
+        "Polaris-Choice__Control_1u8vs"
+      )[0];
+      checkbox.click();
+      isNewRefund = false;
+    }, 100);
+  }
+};

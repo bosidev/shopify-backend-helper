@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Shopify Backend Service Helper",
+  "description": "A little helper for service work in the Shopify admin and backend",
+  "version": "0.2",
+  "author": "Bosi",
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.myshopify.com/admin/*"
+      ],
+      "js": ["src/logic.js", "src/inventory-shower.js", "src/uncheck-restock.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage"]
+
+}
