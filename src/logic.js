@@ -10,6 +10,21 @@ async function displayInventoryData() {
       companyApiBase + variantResourceSuffix + variantId + fileSuffix
     );
     let data = await response.json();
+    let isSpecial = false;
+    const metaResponse = await fetch(
+      companyApiBase +
+        variantResourceSuffix +
+        variantId +
+        "/metafields" +
+        fileSuffix
+    );
+    const metaData = await metaResponse.json();
+    const metafieldSpecial = metaData.metafields.find(
+      (metafield) => metafield.key === "should_sell_out"
+    );
+    if (metafieldSpecial) {
+      isSpecial = metafieldSpecial.value === true ? true : false;
+    }
 
     let inventoryQuantity = data.variant.inventory_quantity;
     let sku = data.variant.sku;
@@ -25,7 +40,7 @@ async function displayInventoryData() {
     }
 
     setTimeout(() => {
-      setElementContent(i, productSKUs, productQuantities);
+      setElementContent(i, productSKUs, productQuantities, isSpecial);
     }, 1500);
   }
 }
@@ -63,10 +78,11 @@ function addElement(i) {
   }
 }
 
-function setElementContent(i, productSKUs, productQuantities) {
+function setElementContent(i, productSKUs, productQuantities, isSpecial) {
   let currentDiv = document.getElementsByClassName("YD4Qk")[i];
   let childsOfCurrentDiv = currentDiv.getElementsByTagName("span");
-  let currentProductSKU = '';
+  let currentProductSKU = "";
+  const specialAddition = isSpecial ? "⭐ Special ⭐" : "";
 
   for (let j = 0; j < childsOfCurrentDiv.length; j++) {
     if (childsOfCurrentDiv[j].innerHTML.includes("Artikelnummer")) {
@@ -84,7 +100,9 @@ function setElementContent(i, productSKUs, productQuantities) {
 
         if (spanContent) {
           spanContent.textContent =
-            currentInventoryQuantity.toString() + " Verfügbar ";
+            currentInventoryQuantity.toString() +
+            " Verfügbar " +
+            specialAddition;
         }
 
         if (newDiv) {
