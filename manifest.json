@@ -12,9 +12,5 @@
       "js": ["src/logic.js", "src/inventory-shower.js", "src/uncheck-restock.js"]
     }
   ],
-  "action": {
-    "default_popup": "popup.html"
-  },
   "permissions": ["storage"]
-
 }
