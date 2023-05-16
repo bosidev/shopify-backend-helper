@@ -1,5 +1,5 @@
 let myshopifyDomain = window.location.host
-let companyApiBase = 'https://' + myshopifyDomain + '/admin/api/2022-04';
+let companyApiBase = 'https://' + myshopifyDomain + '/admin/api/2023-01';
 let orderResourceSuffix = '/orders/';
 let variantResourceSuffix = '/variants/';
 let fileSuffix = '.json';
