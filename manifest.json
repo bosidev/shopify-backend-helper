@@ -7,7 +7,7 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.myshopify.com/admin/*"
+        "*://*.myshopify.com/admin/*","*://admin.shopify.com/*"
       ],
       "js": ["src/logic.js", "src/inventory-shower.js", "src/uncheck-restock.js"]
     }
