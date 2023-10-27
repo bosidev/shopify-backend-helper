@@ -2,7 +2,7 @@ let myshopifyDomain, companyApiBase;
 
 if (window.location.host.includes("admin.shopify.com")) {
   myshopifyDomain = window.location.pathname.split("/")[2];
-  companyApiBase = "https://admin.shopify.com/store/" + myshopifyDomain;
+  companyApiBase = "https://admin.shopify.com/store/" + myshopifyDomain + "/admin/api/2023-07";
 } else {
   myshopifyDomain = window.location.host;
   companyApiBase = "https://" + myshopifyDomain + "/admin/api/2023-07";
