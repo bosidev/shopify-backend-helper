@@ -60,7 +60,12 @@ async function fetchOrderData() {
 function addElement(i) {
   let newDiv = document.createElement("div");
   let newSpan = document.createElement("span");
-  let currentDiv = document.getElementsByClassName("bStku")[i];
+  const allSpans = Array.from(document.querySelectorAll('span'));
+  const artikelNummerElements = allSpans.filter((spanElement) => {
+    return spanElement.textContent.includes('Artikelnummer')
+  })
+  
+  let currentDiv = artikelNummerElements[i].parentElement;
 
   newDiv.setAttribute("id", "OOS-" + i);
   newSpan.setAttribute("id", "OOS-" + i + "-Span");
@@ -79,7 +84,12 @@ function addElement(i) {
 }
 
 function setElementContent(i, productSKUs, productQuantities, isSpecial) {
-  let currentDiv = document.getElementsByClassName("bStku")[i];
+  const allSpans = Array.from(document.querySelectorAll('span'));
+  const artikelNummerElements = allSpans.filter((spanElement) => {
+    return spanElement.textContent.includes('Artikelnummer')
+  })
+  
+  let currentDiv = artikelNummerElements[i].parentElement;
   let childsOfCurrentDiv = currentDiv.getElementsByTagName("span");
   let currentProductSKU = "";
   const specialAddition = isSpecial ? "⭐ Special ⭐" : "";
