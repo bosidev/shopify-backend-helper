@@ -1,6 +1,7 @@
 async function displayInventoryData() {
   const orderData = await fetchOrderData();
   const productsInOrder = orderData.order.line_items;
+  const locationIdToExclude = 60759965893;
   let productSKUs = [];
   let productQuantities = [];
 
@@ -26,7 +27,12 @@ async function displayInventoryData() {
       isSpecial = metafieldSpecial.value === true ? true : false;
     }
 
-    let inventoryQuantity = data.variant.inventory_quantity;
+    // Fetch the inventory level for this variant at "Snocks Coffee Mannheim"
+    let inventoryResponse = await fetch(`${companyApiBase}/inventory_levels.json?inventory_item_ids=${data.variant.inventory_item_id}&location_ids=${locationIdToExclude}`);
+    let inventoryData = await inventoryResponse.json();
+    let excludeLocationInventory = inventoryData.inventory_levels.find(level => level.location_id === locationIdToExclude);
+
+    let inventoryQuantity = data.variant.inventory_quantity - (excludeLocationInventory ? excludeLocationInventory.available : 0);
     let sku = data.variant.sku;
     let isAlreadyCreated = document.getElementById("OOS-" + i);
 
