@@ -10,6 +10,7 @@ if (window.location.host.includes("admin.shopify.com")) {
 
 let orderResourceSuffix = "/orders/";
 let variantResourceSuffix = "/variants/";
+let productResourceSuffix = "/products/";
 let fileSuffix = ".json";
 
 const intervalFunction = setInterval(() => {

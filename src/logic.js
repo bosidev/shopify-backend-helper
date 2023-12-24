@@ -7,6 +7,7 @@ async function displayInventoryData() {
 
   for (let i = 0; i < productsInOrder.length; i++) {
     let variantId = await productsInOrder[i].variant_id;
+    let productId = await productsInOrder[i].product_id;
     let response = await fetch(
       companyApiBase + variantResourceSuffix + variantId + fileSuffix
     );
@@ -14,25 +15,31 @@ async function displayInventoryData() {
     let isSpecial = false;
     const metaResponse = await fetch(
       companyApiBase +
-        variantResourceSuffix +
-        variantId +
+        productResourceSuffix +
+        productId +
         "/metafields" +
         fileSuffix
     );
     const metaData = await metaResponse.json();
     const metafieldSpecial = metaData.metafields.find(
-      (metafield) => metafield.key === "should_sell_out"
+      (metafield) => metafield.key === "is_limited_edition"
     );
     if (metafieldSpecial) {
       isSpecial = metafieldSpecial.value === true ? true : false;
     }
 
     // Fetch the inventory level for this variant at "Snocks Coffee Mannheim"
-    let inventoryResponse = await fetch(`${companyApiBase}/inventory_levels.json?inventory_item_ids=${data.variant.inventory_item_id}&location_ids=${locationIdToExclude}`);
+    let inventoryResponse = await fetch(
+      `${companyApiBase}/inventory_levels.json?inventory_item_ids=${data.variant.inventory_item_id}&location_ids=${locationIdToExclude}`
+    );
     let inventoryData = await inventoryResponse.json();
-    let excludeLocationInventory = inventoryData.inventory_levels.find(level => level.location_id === locationIdToExclude);
+    let excludeLocationInventory = inventoryData.inventory_levels.find(
+      (level) => level.location_id === locationIdToExclude
+    );
 
-    let inventoryQuantity = data.variant.inventory_quantity - (excludeLocationInventory ? excludeLocationInventory.available : 0);
+    let inventoryQuantity =
+      data.variant.inventory_quantity -
+      (excludeLocationInventory ? excludeLocationInventory.available : 0);
     let sku = data.variant.sku;
     let isAlreadyCreated = document.getElementById("OOS-" + i);
 
@@ -66,11 +73,11 @@ async function fetchOrderData() {
 function addElement(i) {
   let newDiv = document.createElement("div");
   let newSpan = document.createElement("span");
-  const allSpans = Array.from(document.querySelectorAll('span'));
+  const allSpans = Array.from(document.querySelectorAll("span"));
   const artikelNummerElements = allSpans.filter((spanElement) => {
-    return spanElement.textContent.includes('Artikelnummer')
-  })
-  
+    return spanElement.textContent.includes("Artikelnummer");
+  });
+
   let currentDiv = artikelNummerElements[i].parentElement;
 
   newDiv.setAttribute("id", "OOS-" + i);
@@ -90,11 +97,11 @@ function addElement(i) {
 }
 
 function setElementContent(i, productSKUs, productQuantities, isSpecial) {
-  const allSpans = Array.from(document.querySelectorAll('span'));
+  const allSpans = Array.from(document.querySelectorAll("span"));
   const artikelNummerElements = allSpans.filter((spanElement) => {
-    return spanElement.textContent.includes('Artikelnummer')
-  })
-  
+    return spanElement.textContent.includes("Artikelnummer");
+  });
+
   let currentDiv = artikelNummerElements[i].parentElement;
   let childsOfCurrentDiv = currentDiv.getElementsByTagName("span");
   let currentProductSKU = "";
