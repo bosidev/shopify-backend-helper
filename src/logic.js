@@ -9,7 +9,7 @@ async function displayInventoryData() {
     let variantId = await productsInOrder[i].variant_id;
     let productId = await productsInOrder[i].product_id;
     let response = await fetch(
-      companyApiBase + variantResourceSuffix + variantId + fileSuffix
+      companyApiBase + productResourceSuffix + productId +variantResourceSuffix + variantId + fileSuffix
     );
     let data = await response.json();
     let isSpecial = false;
@@ -77,7 +77,7 @@ function addElement(i) {
   const artikelNummerElements = allSpans.filter((spanElement) => {
     return spanElement.textContent.includes("Artikelnummer");
   });
-
+  console.log(artikelNummerElements)
   let currentDiv = artikelNummerElements[i].parentElement;
 
   newDiv.setAttribute("id", "OOS-" + i);
@@ -101,7 +101,7 @@ function setElementContent(i, productSKUs, productQuantities, isSpecial) {
   const artikelNummerElements = allSpans.filter((spanElement) => {
     return spanElement.textContent.includes("Artikelnummer");
   });
-
+  console.log(artikelNummerElements)
   let currentDiv = artikelNummerElements[i].parentElement;
   let childsOfCurrentDiv = currentDiv.getElementsByTagName("span");
   let currentProductSKU = "";
