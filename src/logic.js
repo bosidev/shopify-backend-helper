@@ -1,87 +1,57 @@
 async function displayInventoryData() {
-  const orderData = await fetchOrderData();
-  const productsInOrder = orderData.order.line_items;
-  const locationIdToExclude = 60759965893;
-  let productSKUs = [];
-  let productQuantities = [];
-
-  for (let i = 0; i < productsInOrder.length; i++) {
-    let variantId = await productsInOrder[i].variant_id;
-    let productId = await productsInOrder[i].product_id;
-    let response = await fetch(
-      companyApiBase + productResourceSuffix + productId +variantResourceSuffix + variantId + fileSuffix
-    );
-    let data = await response.json();
-    let isSpecial = false;
-    const metaResponse = await fetch(
-      companyApiBase +
-        productResourceSuffix +
-        productId +
-        "/metafields" +
-        fileSuffix
-    );
-    const metaData = await metaResponse.json();
-    const metafieldSpecial = metaData.metafields.find(
-      (metafield) => metafield.key === "is_limited_edition"
-    );
-    if (metafieldSpecial) {
-      isSpecial = metafieldSpecial.value === true ? true : false;
-    }
-
-    // Fetch the inventory level for this variant at "Snocks Coffee Mannheim"
-    let inventoryResponse = await fetch(
-      `${companyApiBase}/inventory_levels.json?inventory_item_ids=${data.variant.inventory_item_id}&location_ids=${locationIdToExclude}`
-    );
-    let inventoryData = await inventoryResponse.json();
-    let excludeLocationInventory = inventoryData.inventory_levels.find(
-      (level) => level.location_id === locationIdToExclude
-    );
-
-    let inventoryQuantity =
-      data.variant.inventory_quantity -
-      (excludeLocationInventory ? excludeLocationInventory.available : 0);
-    let sku = data.variant.sku;
-    let isAlreadyCreated = document.getElementById("OOS-" + i);
-
-    productSKUs.push(sku);
-    productQuantities.push(inventoryQuantity);
-
-    if (!isAlreadyCreated) {
-      setTimeout(() => {
-        addElement(i);
-      }, 1500);
-    }
-
-    setTimeout(() => {
-      setElementContent(i, productSKUs, productQuantities, isSpecial);
-    }, 1500);
-  }
-}
-
-async function fetchOrderData() {
-  let orderId =
+  const orderId =
     window.location.pathname.split("/")[
       window.location.pathname.split("/").length - 1
     ];
-  let apiString = companyApiBase + orderResourceSuffix + orderId + fileSuffix;
-  let response = await fetch(apiString);
-  let orderData = await response.json();
+  const orderData = await fetchData(orderResourceSuffix + orderId);
+  const productsInOrder = orderData.order.line_items;
+  const locationIdToExclude = 60759965893;
 
-  return orderData;
+  productsInOrder.forEach(async (product) => {
+    const variantId = product.variant_id;
+    const productId = product.product_id;
+    const variantData = await fetchData(
+      productResourceSuffix + productId + variantResourceSuffix + variantId
+    );
+    const metaData = await fetchData(
+      productResourceSuffix + productId + metafieldResourceSuffix
+    );
+    const isSpecial = metaData.metafields.find(
+      (metafield) => metafield.key === "is_limited_edition"
+    )?.value
+      ? true
+      : false;
+    const sku = variantData.variant.sku;
+
+    const inventoryResponse = await fetch(
+      `${companyApiBase}/inventory_levels.json?inventory_item_ids=${variantData.variant.inventory_item_id}&location_ids=${locationIdToExclude}`
+    );
+    const inventoryData = await inventoryResponse.json();
+    const excludeLocationInventory = inventoryData.inventory_levels.find(
+      (level) => level.location_id === locationIdToExclude
+    );
+
+    const inventoryQuantity =
+      variantData.variant.inventory_quantity -
+      (excludeLocationInventory ? excludeLocationInventory.available : 0);
+
+    addElement(sku, inventoryQuantity, isSpecial);
+  });
 }
 
-function addElement(i) {
-  let newDiv = document.createElement("div");
-  let newSpan = document.createElement("span");
-  const allSpans = Array.from(document.querySelectorAll("span"));
-  const artikelNummerElements = allSpans.filter((spanElement) => {
-    return spanElement.textContent.includes("Artikelnummer");
-  });
-  console.log(artikelNummerElements)
-  let currentDiv = artikelNummerElements[i].parentElement;
+async function fetchData(resource) {
+  const apiString = companyApiBase + resource + fileSuffix;
+  const response = await fetch(apiString);
 
-  newDiv.setAttribute("id", "OOS-" + i);
-  newSpan.setAttribute("id", "OOS-" + i + "-Span");
+  return await response.json();
+}
+
+function addElement(sku, inventoryQuantity, isSpecial) {
+  const newDiv = document.createElement("div");
+  const allSpans = Array.from(document.querySelectorAll("span"));
+  const currentDiv = allSpans.find((spanElement) => {
+    return spanElement.textContent.includes("Artikelnummer: " + sku);
+  }).parentElement;
 
   newDiv.style.borderColor = "white";
   newDiv.style.borderStyle = "solid";
@@ -89,51 +59,19 @@ function addElement(i) {
   newDiv.style.textAlign = "center";
   newDiv.style.width = "200px";
 
-  newDiv.appendChild(newSpan);
+  setElementContent(newDiv, inventoryQuantity, isSpecial);
 
   if (currentDiv) {
     currentDiv.appendChild(newDiv);
   }
 }
 
-function setElementContent(i, productSKUs, productQuantities, isSpecial) {
-  const allSpans = Array.from(document.querySelectorAll("span"));
-  const artikelNummerElements = allSpans.filter((spanElement) => {
-    return spanElement.textContent.includes("Artikelnummer");
-  });
-  console.log(artikelNummerElements)
-  let currentDiv = artikelNummerElements[i].parentElement;
-  let childsOfCurrentDiv = currentDiv.getElementsByTagName("span");
-  let currentProductSKU = "";
+function setElementContent(newDiv, inventoryQuantity, isSpecial) {
   const specialAddition = isSpecial ? "⭐ Special ⭐" : "";
+  newDiv.textContent =
+    inventoryQuantity.toString() + " Verfügbar " + specialAddition;
 
-  for (let j = 0; j < childsOfCurrentDiv.length; j++) {
-    if (childsOfCurrentDiv[j].innerHTML.includes("Artikelnummer")) {
-      currentProductSKU = childsOfCurrentDiv[j].innerHTML.replace(
-        "Artikelnummer: ",
-        ""
-      );
-    }
-    for (let k = 0; k < productSKUs.length; k++) {
-      if (currentProductSKU === productSKUs[k]) {
-        let currentInventoryQuantity = productQuantities[k];
-
-        let spanContent = document.getElementById("OOS-" + i + "-Span");
-        let newDiv = document.getElementById("OOS-" + i);
-
-        if (spanContent) {
-          spanContent.textContent =
-            currentInventoryQuantity.toString() +
-            " Verfügbar " +
-            specialAddition;
-        }
-
-        if (newDiv) {
-          giveCorrectDivColor(currentInventoryQuantity, newDiv);
-        }
-      }
-    }
-  }
+  giveCorrectDivColor(inventoryQuantity, newDiv);
 }
 
 function giveCorrectDivColor(currentInventoryQuantity, newDiv) {
