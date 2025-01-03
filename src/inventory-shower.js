@@ -12,7 +12,7 @@ if (window.location.host.includes("admin.shopify.com")) {
 const orderResourceSuffix = "/orders/";
 const variantResourceSuffix = "/variants/";
 const productResourceSuffix = "/products/";
-const metafieldResourceSuffix = '/metafields';
+const metafieldResourceSuffix = "/metafields";
 const fileSuffix = ".json";
 const isCorrectUrl =
   window.location.pathname.includes("/orders/") &&
@@ -20,16 +20,13 @@ const isCorrectUrl =
     ? true
     : false;
 
-function containsArtikelnummer(node) {
-  if (
-    node.nodeType === Node.TEXT_NODE &&
-    node.textContent.includes("Artikelnummer")
-  ) {
+function containsSku(node) {
+  if (node.nodeType === Node.TEXT_NODE && node.textContent.includes("SKU:")) {
     return true;
   }
   if (node.nodeType === Node.ELEMENT_NODE) {
     for (let child of node.childNodes) {
-      if (containsArtikelnummer(child)) {
+      if (containsSku(child)) {
         return true;
       }
     }
@@ -42,7 +39,8 @@ if (isCorrectUrl) {
     for (let mutation of mutationsList) {
       if (mutation.type === "childList") {
         mutation.addedNodes.forEach((node) => {
-          if (containsArtikelnummer(node)) {
+          console.log(containsSku(node));
+          if (containsSku(node)) {
             observer.disconnect();
             displayInventoryData();
           }

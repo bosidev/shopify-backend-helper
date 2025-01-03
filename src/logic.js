@@ -50,7 +50,7 @@ function addElement(sku, inventoryQuantity, isSpecial) {
   const newDiv = document.createElement("div");
   const allSpans = Array.from(document.querySelectorAll("span"));
   const currentDiv = allSpans.find((spanElement) => {
-    return spanElement.textContent.includes("Artikelnummer: " + sku);
+    return spanElement.textContent.includes("SKU: " + sku);
   }).parentElement;
 
   newDiv.style.borderColor = "white";
