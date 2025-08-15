@@ -21,7 +21,7 @@ const isCorrectUrl =
     : false;
 
 function containsSku(node) {
-  if (node.nodeType === Node.TEXT_NODE && node.textContent.includes("SKU:")) {
+  if (node.nodeType === Node.TEXT_NODE && node.textContent.includes("SKU")) {
     return true;
   }
   if (node.nodeType === Node.ELEMENT_NODE) {
@@ -39,7 +39,6 @@ if (isCorrectUrl) {
     for (let mutation of mutationsList) {
       if (mutation.type === "childList") {
         mutation.addedNodes.forEach((node) => {
-          console.log(containsSku(node));
           if (containsSku(node)) {
             observer.disconnect();
             displayInventoryData();
